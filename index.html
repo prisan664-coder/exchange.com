@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>💵 ระบบแลกเงิน - Fuji Mobile Shop</title>
+
+    <!-- ✅ SheetJS สำหรับ Export Excel -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+
+    <!-- ✅ jsPDF สำหรับ Export PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #f4f4f4;
+        }
+
+        body.dark {
+            background: #121212;
+            color: #e0e0e0;
+        }
+
+        body.dark .container {
+            background: #1e1e1e;
+            color: #e0e0e0;
+        }
+
+        body.dark nav {
+            background: #1f1f1f;
+        }
+
+        body.dark nav button {
+            background: #2c2c2c;
+        }
+
+        header {
+            background: #007bff;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-size: 24px;
+        }
+
+        nav {
+            background: #343a40;
+            padding: 10px;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+
+        nav button {
+            padding: 10px 15px;
+            color: white;
+            background: #495057;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        label {
+            display: block;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+
+        input,
+        select {
+            width: 100%;
+            padding: 8px;
+            margin-top: 5px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+
+        button.action {
+            margin-top: 15px;
+            padding: 10px 20px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th,
+        td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: center;
+        }
+
+        th {
+            background: #007bff;
+            color: white;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .section-title {
+            font-size: 20px;
+            margin-top: 20px;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 5px;
+        }
+
+        .result {
+            margin-top: 15px;
+            padding: 10px;
+            background: #e9ecef;
+            border-radius: 4px;
+        }
+
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+
+            #printArea,
+            #printArea * {
+                visibility: visible;
+            }
+
+            #printArea {
+                position: fixed;
+                left: 0;
+                top: 0;
+                width: 100%;
+                background: white;
+                padding: 20px;
+                color: black;
+            }
+        }
+    </style>
+</head>
+
+<body class="light">
+    <header>💵 ระบบแลกเงิน - Fuji Mobile Shop</header>
+
+    <nav>
+        <button onclick="showScreen('dashboard')">Dashboard 📊</button>
+        <button onclick="showScreen('exchange')">ตั้งค่าอัตรา 🔄</button>
+        <button onclick="showScreen('transaction')">ทำรายการแลกเงิน 💵</button>
+        <button onclick="toggleTheme()">🌙/☀️</button>
+    </nav>
+
+    <!-- Dashboard -->
+    <div class="container" id="dashboardScreen">
+        <h2 class="section-title">Dashboard</h2>
+
+        <h3>💱 อัตราแลกเปลี่ยน</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>คู่สกุลเงิน</th>
+                    <th>Buy</th>
+                    <th>Sell</th>
+                </tr>
+            </thead>
+            <tbody id="rateTable"></tbody>
+        </table>
+
+        <h3>💰 เงินคงเหลือ</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>สกุลเงิน</th>
+                    <th>ยอดคงเหลือ</th>
+                </tr>
+            </thead>
+            <tbody id="cashTable"></tbody>
+        </table>
+
+        <h3>📝 ธุรกรรมล่าสุด</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>เวลา</th>
+                    <th>ประเภท</th>
+                    <th>คู่</th>
+                    <th>จำนวน</th>
+                    <th>ได้รับ</th>
+                </tr>
+            </thead>
+            <tbody id="transactionTable"></tbody>
+        </table>
+
+        <button class="action" onclick="exportPDF()">📄 Export PDF Report</button>
+        <button class="action" onclick="exportExcel()">📊 Export Excel</button>
+    </div>
+
+    <!-- Exchange -->
+    <div class="container hidden" id="exchangeScreen">
+        <h2 class="section-title">ตั้งค่าอัตรา</h2>
+        <div id="exchangeFormContainer"></div>
+        <h3 style="margin-top:30px;">💰 แก้ไข Cash Balance</h3>
+        <div id="cashFormContainer"></div>
+    </div>
+
+    <!-- Transaction -->
+    <div class="container hidden" id="transactionScreen">
+        <h2 class="section-title">ทำรายการแลกเงิน</h2>
+
+        <label>คู่สกุลเงิน</label>
+        <select id="currencyPair">
+            <option value="THB-LAK">THB → LAK</option>
+            <option value="LAK-THB">LAK → THB</option>
+            <option value="LAK-CNY">LAK → CNY</option>
+            <option value="CNY-LAK">CNY → LAK</option>
+            <option value="USD-LAK">USD → LAK</option>
+            <option value="LAK-USD">LAK → USD</option>
+        </select>
+
+        <label>เงินที่ลูกค้าให้</label>
+        <input type="number" id="sourceAmount">
+
+        <label>เงินที่ได้รับ</label>
+        <input type="number" id="targetAmount" readonly>
+
+        <button class="action" onclick="calculateExchange()">คำนวณและบันทึก</button>
+        <button class="action" onclick="printReceipt()">🧾 พิมพ์ใบเสร็จ</button>
+
+        <div class="result" id="transactionResult"></div>
+    </div>
+
+    <!-- ใบเสร็จ -->
+    <div id="printArea" class="hidden">
+        <h2 style="text-align:center;">Fuji Mobile Shop</h2>
+        <p style="text-align:center;">ใบเสร็จรับเงิน</p>
+        <hr>
+        <div id="receiptContent"></div>
+        <hr>
+        <p style="text-align:center;">ขอบคุณที่ใช้บริการ</p>
+    </div>
+
+    <script>
+        const rates = {
+            "THB-LAK": { buy: 300, sell: 305 },
+            "LAK-THB": { buy: 0.00325, sell: 0.0033 },
+            "LAK-CNY": { buy: 0.00045, sell: 0.00046 },
+            "CNY-LAK": { buy: 2170, sell: 2180 },
+            "USD-LAK": { buy: 18000, sell: 18200 },
+            "LAK-USD": { buy: 0.000054, sell: 0.000055 }
+        };
+
+        let cashBalance = { THB: 50000, LAK: 50000000, CNY: 20000, USD: 1000 };
+        let transactions = [];
+        let lastTransaction = null;
+
+        function showScreen(s) {
+            dashboardScreen.classList.add("hidden");
+            exchangeScreen.classList.add("hidden");
+            transactionScreen.classList.add("hidden");
+
+            if (s === "dashboard") updateDashboard();
+            if (s === "exchange") renderForms();
+
+            window[s + "Screen"].classList.remove("hidden");
+        }
+
+        function updateDashboard() {
+            rateTable.innerHTML = Object.keys(rates).map(p =>
+                `<tr><td>${p}</td><td>${rates[p].buy}</td><td>${rates[p].sell}</td></tr>`
+            ).join("");
+
+            cashTable.innerHTML = Object.keys(cashBalance).map(c =>
+                `<tr><td>${c}</td><td>${cashBalance[c]}</td></tr>`
+            ).join("");
+
+            transactionTable.innerHTML = transactions.slice(-5).reverse().map(t =>
+                `<tr><td>${t.time}</td><td>${t.type}</td><td>${t.pair}</td><td>${t.sourceAmount}</td><td>${t.targetAmount}</td></tr>`
+            ).join("");
+        }
+
+        function calculateExchange() {
+            const pair = currencyPair.value;
+            const amt = parseFloat(sourceAmount.value);
+            if (!amt) return alert("กรุณาใส่จำนวนเงิน");
+
+            const rate = rates[pair].sell;
+            const result = amt * rate;
+            targetAmount.value = result.toFixed(2);
+
+            const [from, to] = pair.split("-");
+            cashBalance[from] += amt;
+            cashBalance[to] -= result;
+
+            lastTransaction = {
+                time: new Date().toLocaleString(),
+                type: "แลกเงิน",
+                pair,
+                sourceAmount: amt,
+                targetAmount: result.toFixed(2)
+            };
+
+            transactions.push(lastTransaction);
+            transactionResult.innerHTML = "✅ บันทึกเรียบร้อย";
+            updateDashboard();
+        }
+
+        function printReceipt() {
+            if (!lastTransaction) return alert("ยังไม่มีรายการให้พิมพ์");
+
+            receiptContent.innerHTML = `
+                <p>เวลา: ${lastTransaction.time}</p>
+                <p>คู่สกุลเงิน: ${lastTransaction.pair}</p>
+                <p>จำนวนที่ให้: ${lastTransaction.sourceAmount}</p>
+                <p>จำนวนที่ได้รับ: ${lastTransaction.targetAmount}</p>
+            `;
+
+            printArea.classList.remove("hidden");
+            window.print();
+            printArea.classList.add("hidden");
+        }
+
+        function toggleTheme() {
+            document.body.classList.toggle("dark");
+        }
+
+        function renderForms() {
+            exchangeFormContainer.innerHTML = Object.keys(rates).map(p => `
+                <label>${p} Buy</label>
+                <input id="${p}-buy" type="number" value="${rates[p].buy}">
+                <label>${p} Sell</label>
+                <input id="${p}-sell" type="number" value="${rates[p].sell}">
+                <button class="action" onclick="updateRate('${p}')">บันทึกเรท</button><hr>
+            `).join("");
+
+            cashFormContainer.innerHTML = Object.keys(cashBalance).map(cur => `
+                <label>${cur} Cash Balance</label>
+                <input type="number" id="cash-${cur}" value="${cashBalance[cur]}">
+                <button class="action" onclick="updateCash('${cur}')">บันทึกยอด</button>
+            `).join("");
+        }
+
+        function updateRate(pair) {
+            rates[pair].buy = parseFloat(document.getElementById(pair + "-buy").value);
+            rates[pair].sell = parseFloat(document.getElementById(pair + "-sell").value);
+            alert("บันทึกเรทแล้ว");
+            updateDashboard();
+        }
+
+        function updateCash(cur) {
+            cashBalance[cur] = parseFloat(document.getElementById("cash-" + cur).value);
+            alert("อัปเดตยอดแล้ว");
+            updateDashboard();
+        }
+
+        showScreen("dashboard");
+
+        // ✅ Export Excel
+        function exportExcel() {
+            if (transactions.length === 0) {
+                alert("ยังไม่มีข้อมูลให้ส่งออก");
+                return;
+            }
+
+            const data = [
+                ["เวลา", "ประเภท", "คู่สกุลเงิน", "จำนวนที่ให้", "จำนวนที่ได้รับ"]
+            ];
+
+            transactions.forEach(t => {
+                data.push([
+                    t.time,
+                    t.type,
+                    t.pair,
+                    t.sourceAmount,
+                    t.targetAmount
+                ]);
+            });
+
+            const ws = XLSX.utils.aoa_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Transactions");
+
+            const filename = `transactions_${new Date().toISOString().slice(0, 10)}.xlsx`;
+            XLSX.writeFile(wb, filename);
+        }
+
+        // PDF
+        async function exportPDF() {
+            if (transactions.length === 0) { alert("ยังไม่มีธุรกรรมให้สร้างรายงาน"); return; }
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            doc.text("Fuji Mobile Shop Report", 20, 20);
+            let y = 30;
+            transactions.forEach(t => {
+                doc.text(`${t.time} | ${t.pair} | ${t.sourceAmount} -> ${t.targetAmount}`, 20, y);
+                y += 6;
+            });
+            doc.save("report.pdf");
+        }
+    </script>
+</body>
+
+</html>
