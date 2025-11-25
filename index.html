@@ -6,7 +6,7 @@
     <meta charset="UTF-8">
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title id="title_header_lo">💵 ລະບົບແລກປ່ຽນພາຍໃນຮ້ານ - ນາງປາຊ້ອຍຊົ່ງ</title>
+    <title id="title_header_lo">💵 ระบบแลกเงิน - Online exchange</title>
 
     <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
@@ -167,7 +167,7 @@
 </head>
 
 <body class="light">
-    <header id="header_text">💵 ระบบแลกเงิน - Fuji Mobile Shop</header>
+    <header id="header_text">💵 ระบบแลกเงิน - Online exchange</header>
 
     <nav>
         <button id="nav_dashboard" onclick="showScreen('dashboard')">📊 หน้าอัตราแลกเปลี่ยน</button>
@@ -256,7 +256,7 @@
     </div>
 
     <div id="printArea" class="hidden">
-        <h2 style="text-align:center;">Fuji Mobile Shop</h2>
+        <h2 style="text-align:center;">Exchange Money Online Service</h2>
         <p style="text-align:center;" id="receipt_title">ใบเสร็จรับเงิน</p>
 
         <hr>
@@ -303,11 +303,11 @@
                 const data = snapshot.val();
                 // Fallback to initial hardcoded rates if DB is empty.
                 const initialRates = {
-                    "THB-LAK": { buy: 300, sell: 305 },
+                    "THB": { buy: 300, sell: 305 },
                     "LAK-THB": { buy: 0.00325, sell: 0.0033 },
                     "LAK-CNY": { buy: 0.00045, sell: 0.00046 },
-                    "CNY-LAK": { buy: 2170, sell: 2180 },
-                    "USD-LAK": { buy: 18000, sell: 18200 },
+                    "CNY": { buy: 2170, sell: 2180 },
+                    "USD": { buy: 18000, sell: 18200 },
                     "LAK-USD": { buy: 0.000054, sell: 0.000055 }
                 };
                 callback(data || initialRates);
@@ -582,7 +582,7 @@
         // =================================== ระบบแปลภาษาใหม่ (รองรับ TH, LO, EN) ===================================
         const translations = {
             th: {
-                header_text: "💵 ระบบแลกเงิน - Fuji Mobile Shop",
+                header_text: "💵 💵 ร้านแลกเปลี่ยนเงิน - แลกเปลี่ยนเงินออนไลน์",
                 nav_dashboard: "📊 หน้าอัตราแลกเปลี่ยน",
                 nav_exchange: "แก้ไขอัตราแลกเปลี่ยน🔄",
                 nav_transaction: "📈 ทำรายการแลกเงิน",
@@ -604,7 +604,7 @@
                 alert_confirm_delete: "คุณต้องการลบรายการธุรกรรมนี้หรือไม่?", alert_delete_error: "เกิดข้อผิดพลาดในการลบรายการ", transaction_type: "แลกเงิน"
             },
             lo: {
-                header_text: "💵 ລະບົບແລກປ່ຽນພາຍໃນຮ້ານ - Fuji Mobile Shop",
+                header_text: "💵 ຮ້ານແລກປ່ຽນເງິນຕ່າງປະເທດ - ລະບົບອອນໄລໃຊ້ໄດ້ທົ່ວໂລກ", 
                 nav_dashboard: "📊 ໜ້າອັດຕາແລກປ່ຽນ",
                 nav_exchange: "ແກ້ໄຂອັດຕາແລກປ່ຽນ🔄",
                 nav_transaction: "📈 ເຮັດລາຍການແລກປ່ຽນ",
@@ -626,7 +626,7 @@
                 alert_confirm_delete: "ທ່ານຕ້ອງການລຶບລາຍການແລກປ່ຽນນີ້ ຫຼື ບໍ່?", alert_delete_error: "ເກີດຂໍ້ຜິດພາດໃນການລຶບລາຍການ", transaction_type: "ແລກປ່ຽນ"
             },
             en: { // ********************** เพิ่มภาษาอังกฤษ **********************
-                header_text: "💵 Exchange System - Fuji Mobile Shop",
+                header_text: "💵 Money Exchane Shop- Online Service",
                 nav_dashboard: "📊 Exchange Rates",
                 nav_exchange: "Edit Rates 🔄",
                 nav_transaction: "📈 Make Transaction",
